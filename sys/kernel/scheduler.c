@@ -81,11 +81,7 @@ void dispatch_isr(void *arg)
                 panic(PANIC_STACK_OVERFLOW);
         if (krnl_tasks > 0){
                 process_delay_queue();
-                #ifdef SCHEDULE_EDF
-                  krnl_current_task = sched_edf();
-                #else
-                  krnl_current_task = sched_rt();
-                #endif
+                krnl_current_task = sched_rt();
                 if (krnl_current_task == 0)
                         krnl_current_task = sched_be();
                 krnl_task->state = TASK_RUNNING;
@@ -143,7 +139,11 @@ static void sort_rt_queue(void)
                 for (j = i + 1; j < cnt; j++){
                         e1 = hf_queue_get(krnl_rt_queue, i);
                         e2 = hf_queue_get(krnl_rt_queue, j);
-                        if (e1->period > e2->period)
+                        #ifdef SCHEDULE_EDF
+                          if (e1->deadline > e2->deadline)
+                        #else
+                          if (e1->period > e2->period)
+                        #endif
                                 if (hf_queue_swap(krnl_rt_queue, i, j)) panic(PANIC_CANT_SWAP);
                 }
         }
@@ -198,16 +198,4 @@ int32_t sched_rt(void)
                 krnl_task = &krnl_tcb[0];
                 return 0;
         }
-}
-
-/**
- * @brief Earliest Deadline First (EDF) scheduler.
- *
- * @return Real time task id.
- *
- */
-
-int32_t sched_edf(void)
-{
-  return 0;
 }
