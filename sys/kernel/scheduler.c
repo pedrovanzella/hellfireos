@@ -14,6 +14,8 @@
  * 
  */
 
+#define SCHEDULE_EDF 1
+
 #include <hal.h>
 #include <libc.h>
 #include <kprintf.h>
@@ -79,7 +81,11 @@ void dispatch_isr(void *arg)
                 panic(PANIC_STACK_OVERFLOW);
         if (krnl_tasks > 0){
                 process_delay_queue();
-                krnl_current_task = sched_rt();
+                #ifdef SCHEDULE_EDF
+                  krnl_current_task = sched_edf();
+                #else
+                  krnl_current_task = sched_rt();
+                #endif
                 if (krnl_current_task == 0)
                         krnl_current_task = sched_be();
                 krnl_task->state = TASK_RUNNING;
@@ -112,7 +118,7 @@ void dispatch_isr(void *arg)
 int32_t sched_be(void)
 {
         int32_t r, i = 0;
-  
+
         r = random() % krnl_tasks;
         if (hf_queue_count(krnl_run_queue) == 0)
                 panic(PANIC_NO_TASKS_RUN);
@@ -131,7 +137,7 @@ static void sort_rt_queue(void)
 {
         int32_t i, j, cnt;
         struct tcb_entry *e1, *e2;
-  
+
         cnt = hf_queue_count(krnl_rt_queue);
         for (i = 0; i < cnt-1; i++) {
                 for (j = i + 1; j < cnt; j++){
@@ -145,9 +151,9 @@ static void sort_rt_queue(void)
 
 /**
  * @brief Real time (RT) scheduler.
- * 
+ *
  * @return Real time task id.
- * 
+ *
  * The scheduling algorithm is Rate Monotonic.
  * 	- Sort the queue of RT tasks by period;
  * 	- Update real time information (remaining deadline and capacity) of the
@@ -160,11 +166,11 @@ int32_t sched_rt(void)
 {
         int32_t i, k;
         uint16_t id = 0;
-  
+
         k = hf_queue_count(krnl_rt_queue);
         if (k == 0)
                 return 0;
-    
+
         sort_rt_queue();
 
         for (i = 0; i < k; i++){
@@ -187,9 +193,21 @@ int32_t sched_rt(void)
         if (id) {
                 krnl_task = &krnl_tcb[id];
                 return id;
-        }else{
+        } else {
                 /* no RT task to run */
                 krnl_task = &krnl_tcb[0];
                 return 0;
         }
+}
+
+/**
+ * @brief Earliest Deadline First (EDF) scheduler.
+ *
+ * @return Real time task id.
+ *
+ */
+
+int32_t sched_edf(void)
+{
+  return 0;
 }
