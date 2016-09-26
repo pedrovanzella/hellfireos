@@ -140,7 +140,7 @@ static void sort_rt_queue(void)
                         e1 = hf_queue_get(krnl_rt_queue, i);
                         e2 = hf_queue_get(krnl_rt_queue, j);
                         #ifdef SCHEDULE_EDF
-                          if (e1->deadline > e2->deadline)
+                          if (e1->deadline < e2->deadline)
                         #else
                           if (e1->period > e2->period)
                         #endif
