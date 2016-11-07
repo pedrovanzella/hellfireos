@@ -108,15 +108,21 @@ void do_sobel(uint8_t *img, int32_t width, int32_t height){
 }
 
 void slave(void) {
-
+	unit16_t ret;
+	unit16_t cpu, task, size;
 	uint8_t *img = (uint8_t *) malloc(height / numtasks * width / numtasks);
 
 	// img = recebe de master img cortado
-
-	do_gaussian(img, width / numtasks, height / numtasks);
-	do_sobel(img, width / numtasks, height / numtasks);
-
+	
+	ret = hf_recvack(&cpu, &task, img, &size, 0);
+	if (!ret) {
+		do_gaussian(img, width / numtasks, height / numtasks);
+		do_sobel(img, width / numtasks, height / numtasks);
 	// retorna pra master junto da taskid
+	} else {
+		// erro!!!	
+	}
+
 }
 
 void master(void){
