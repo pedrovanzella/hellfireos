@@ -138,6 +138,8 @@ void master(void){
 		// for i in (1, numtasks)
 		// spawn slave com img cortada
 
+		// envia img cortada
+
 		//do_gausian(img, width, height);
 		//do_sobel(img, width, height);
 
