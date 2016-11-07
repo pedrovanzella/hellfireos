@@ -2,6 +2,8 @@
 #include <noc.h>
 #include "image.h"
 
+uint8_t numtasks = 1;
+
 uint8_t gausian(uint8_t buffer[5][5]){
 	int32_t sum = 0, mpixel;
 	uint8_t i, j;
@@ -105,7 +107,19 @@ void do_sobel(uint8_t *img, int32_t width, int32_t height){
 	}
 }
 
-void task(void){
+void slave(void) {
+
+	uint8_t *img = (uint8_t *) malloc(height / numtasks * width / numtasks);
+
+	// img = recebe de master img cortado
+
+	do_gaussian(img, width / numtasks, height / numtasks);
+	do_sobel(img, width / numtasks, height / numtasks);
+
+	// retorna pra master junto da taskid
+}
+
+void master(void){
 	uint32_t i, j, k = 0;
 	uint8_t *img;
 	uint32_t time;
@@ -121,8 +135,14 @@ void task(void){
 
 		time = _readcounter();
 
-		do_gausian(img, width, height);
-		do_sobel(img, width, height);
+		// for i in (1, numtasks)
+		// spawn slave com img cortada
+
+		//do_gausian(img, width, height);
+		//do_sobel(img, width, height);
+
+		// fica ouvindo por (numtasks) slaves
+		// monta img com isso
 
 		time = _readcounter() - time;
 
@@ -149,6 +169,6 @@ void task(void){
 
 void app_main(void) {
 	if (hf_cpuid() == 0){
-		hf_spawn(task, 0, 0, 0, "filter", 2048);
+		hf_spawn(master, 0, 0, 0, "filter", 2048);
 	}
 }

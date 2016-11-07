@@ -1,1 +1,4 @@
 doc/html/
+usr/sim/mpsoc_sim/reports/*.txt
+usr/sim/mpsoc_sim/reports/*.bin
+usr/sim/mpsoc_sim/objects/*.bin
