@@ -115,8 +115,8 @@ void do_sobel(uint8_t *img, int32_t width, int32_t height){
 }
 
 void slave(void) {
-	unit16_t ret;
-	unit16_t cpu, port, size;
+	uint16_t ret;
+	uint16_t cpu, port, size;
 	uint8_t *img = (uint8_t *) malloc(height / numtasks * width / numtasks);
 
 	if (hf_comm_create(hf_selfid(), 2000, 0)) {
@@ -136,7 +136,7 @@ void slave(void) {
 		printf("Slave: sent processed image chunk\n");
 	} else {
 		// erro!!!
-		printf("slave: deu ruim!\n")
+		printf("slave: deu ruim!\n");
 	}
 
 }
@@ -169,8 +169,8 @@ void master(void){
 		printf("Master: sent image\n");
 
 		// fica ouvindo por (numtasks) slaves
-		uint16_t cpu, port, size, size;
-		hf_recvack(&cpu, &port, img, size, 0);
+		uint16_t cpu, port, xsize, size;
+		hf_recvack(&cpu, &port, img, xsize, 0);
 		printf("Master: received processes image\n");
 		// monta img com isso
 
