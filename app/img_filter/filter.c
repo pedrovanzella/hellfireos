@@ -4,13 +4,6 @@
 
 uint8_t numtasks = 1;
 
-struct response {
-	uint16_t source_cpu;
-	uint8_t source_id;
-	uint16_t size;
-	uint8_t message[32][32];
-}
-
 uint8_t gausian(uint8_t buffer[5][5]){
 	int32_t sum = 0, mpixel;
 	uint8_t i, j;
