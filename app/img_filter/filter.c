@@ -163,9 +163,11 @@ void master(void){
 
 		// fica ouvindo por (numtasks) slaves
 		uint16_t cpu, port, xsize, size;
+		// Mudar isso para receber em um novo buffer
 		hf_recvack(&cpu, &port, img, xsize, 0);
 		printf("Master: received processes image\n");
 		// monta img com isso
+		// pra montar: multiplica pelo numero da task
 
 		time = _readcounter() - time;
 
@@ -198,5 +200,6 @@ void app_main(void) {
 	if (hf_cpuid() == 1) {
 		hf_spawn(slave, 0, 0, 0, "slave-1", width * height);
 	}
-	// if cpuid is 1, spawn slave 1 etc
+	// for i in 1..9
+	// spawn slave i in cpu i
 }
