@@ -119,13 +119,17 @@ void slave(void) {
 	unit16_t cpu, port, size;
 	uint8_t *img = (uint8_t *) malloc(height / numtasks * width / numtasks);
 
+	if (hf_comm_create(hf_selfid(), 2000, 0)) {
+		panic(0xff);
+	}
+
 	// Recebe img de master
 	ret = hf_recvack(&cpu, &port, img, &size, 0);
 	if (!ret) {
 		// Se nao deu erro nenhum, podemos processar
 		do_gaussian(img, width / numtasks, height / numtasks);
 		do_sobel(img, width / numtasks, height / numtasks);
-		
+
 		// retorna pra master junto da taskid
 		hf_sendack(cpu, port, img, sizeof(img), 0, 500);
 	} else {
@@ -139,6 +143,10 @@ void master(void){
 	uint32_t i, j, k = 0;
 	uint8_t *img;
 	uint32_t time;
+
+	if (hf_comm_create(hf_selfid(), 1000, 0)) {
+		panic(0xff);
+	}
 	
 	while(1) {
 		img = (uint8_t *) malloc(height * width);
