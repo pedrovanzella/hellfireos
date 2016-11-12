@@ -125,6 +125,7 @@ void slave(void) {
 
 	// Recebe img de master
 	ret = hf_recvack(&cpu, &port, img, &size, 0);
+	printf("Slave: received image to be processed\n");
 	if (!ret) {
 		// Se nao deu erro nenhum, podemos processar
 		do_gaussian(img, width / numtasks, height / numtasks);
@@ -132,6 +133,7 @@ void slave(void) {
 
 		// retorna pra master junto da taskid
 		hf_sendack(cpu, port, img, sizeof(img), 0, 500);
+		printf("Slave: sent processed image chunk\n");
 	} else {
 		// erro!!!
 		printf("slave: deu ruim!\n")
@@ -163,8 +165,13 @@ void master(void){
 		// spawn slave com img cortada
 
 		// envia img cortada
+		hf_sendack(1, 2000, img, width * height, 0, 500);
+		printf("Master: sent image\n");
 
 		// fica ouvindo por (numtasks) slaves
+		uint16_t cpu, port, size, size;
+		hf_recvack(&cpu, &port, img, size, 0);
+		printf("Master: received processes image\n");
 		// monta img com isso
 
 		time = _readcounter() - time;
