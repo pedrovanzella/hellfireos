@@ -4,6 +4,13 @@
 
 uint8_t numtasks = 1;
 
+struct response {
+	uint16_t source_cpu;
+	uint8_t source_id;
+	uint16_t size;
+	uint8_t message[32][32];
+}
+
 uint8_t gausian(uint8_t buffer[5][5]){
 	int32_t sum = 0, mpixel;
 	uint8_t i, j;
@@ -109,18 +116,21 @@ void do_sobel(uint8_t *img, int32_t width, int32_t height){
 
 void slave(void) {
 	unit16_t ret;
-	unit16_t cpu, task, size;
+	unit16_t cpu, port, size;
 	uint8_t *img = (uint8_t *) malloc(height / numtasks * width / numtasks);
 
-	// img = recebe de master img cortado
-	
-	ret = hf_recvack(&cpu, &task, img, &size, 0);
+	// Recebe img de master
+	ret = hf_recvack(&cpu, &port, img, &size, 0);
 	if (!ret) {
+		// Se nao deu erro nenhum, podemos processar
 		do_gaussian(img, width / numtasks, height / numtasks);
 		do_sobel(img, width / numtasks, height / numtasks);
-	// retorna pra master junto da taskid
+		
+		// retorna pra master junto da taskid
+		hf_sendack(cpu, port, img, sizeof(img), 0, 500);
 	} else {
-		// erro!!!	
+		// erro!!!
+		printf("slave: deu ruim!\n")
 	}
 
 }
@@ -145,9 +155,6 @@ void master(void){
 		// spawn slave com img cortada
 
 		// envia img cortada
-
-		//do_gausian(img, width, height);
-		//do_sobel(img, width, height);
 
 		// fica ouvindo por (numtasks) slaves
 		// monta img com isso
@@ -177,6 +184,11 @@ void master(void){
 
 void app_main(void) {
 	if (hf_cpuid() == 0){
-		hf_spawn(master, 0, 0, 0, "filter", 2048);
+		hf_spawn(master, 0, 0, 0, "master", width * height);
+		// spawn receivers 0-8
 	}
+	if (hf_cpuid() == 1) {
+		hf_spawn(slave, 0, 0, 0, "slave-1", width * height);
+	}
+	// if cpuid is 1, spawn slave 1 etc
 }
