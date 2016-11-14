@@ -116,20 +116,22 @@ void slave(void) {
 		panic(0xff);
 	}
 
-	// Recebe img de master
-	ret = hf_recvack(&cpu, &port, img, &size, 0);
-	printf("Slave: received image to be processed\n");
-	if (!ret) {
-		// Se nao deu erro nenhum, podemos processar
-		do_gaussian(img, width / numtasks, height / numtasks);
-		do_sobel(img, width / numtasks, height / numtasks);
+	while(1) {
+		// Recebe img de master
+		ret = hf_recvack(&cpu, &port, img, &size, 0);
+		printf("Slave: received image to be processed\n");
+		if (!ret) {
+			// Se nao deu erro nenhum, podemos processar
+			do_gaussian(img, width / numtasks, height / numtasks);
+			do_sobel(img, width / numtasks, height / numtasks);
 
-		// retorna pra master junto da taskid
-		hf_sendack(cpu, port, img, sizeof(img), 0, 500);
-		printf("Slave: sent processed image chunk\n");
-	} else {
-		// erro!!!
-		printf("slave: deu ruim!\n");
+			// retorna pro builder
+			hf_sendack(0, 1000, img, sizeof(img), 0, 500);
+			printf("Slave: sent processed image chunk\n");
+		} else {
+			// erro!!!
+			printf("slave: deu ruim!\n");
+		}
 	}
 
 }
@@ -195,7 +197,6 @@ void master(void){
 void app_main(void) {
 	if (hf_cpuid() == 0){
 		hf_spawn(master, 0, 0, 0, "master", width * height);
-	}
 	for (int i = 1; i <= numtasks; i++) {
 		if (hf_cpuid() == i) {
 			char[8] name = "slave-";
