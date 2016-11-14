@@ -144,12 +144,6 @@ void master(void){
 	}
 	
 	while(1) {
-		img = (uint8_t *) malloc(height * width);
-		if (img == NULL){
-			printf("\nmalloc() failed!\n");
-			for(;;);
-		}
-
 		printf("\n\nstart of processing!\n\n");
 
 		time = _readcounter();
@@ -158,16 +152,22 @@ void master(void){
 		// spawn slave com img cortada
 
 		// envia img cortada
-		hf_sendack(1, 2000, img, width * height, 0, 500);
-		printf("Master: sent image\n");
+		for (i = 1; i <= numtasks; i++) {
+			hf_sendack(i, 2000, (image / numtasks) * i, (width * height) / numtasks, 0, 500);
+			printf("Master: sent image\n");
+		}
 
+
+		// this won't work
 		// fica ouvindo por (numtasks) slaves
-		uint16_t cpu, port, xsize, size;
+		uint16_t cpu, port, size;
 		// Mudar isso para receber em um novo buffer
-		hf_recvack(&cpu, &port, img, xsize, 0);
+		uint8_t* buff = (uint8_t*) malloc(width * height / numtasks);
+		hf_recvack(&cpu, &port, buff, size, 0);
 		printf("Master: received processes image\n");
 		// monta img com isso
 		// pra montar: multiplica pelo numero da task
+		memcopy(img * cpu, buff, size);
 
 		time = _readcounter() - time;
 
@@ -195,11 +195,13 @@ void master(void){
 void app_main(void) {
 	if (hf_cpuid() == 0){
 		hf_spawn(master, 0, 0, 0, "master", width * height);
-		// spawn receivers 0-8
 	}
-	if (hf_cpuid() == 1) {
-		hf_spawn(slave, 0, 0, 0, "slave-1", width * height);
+	for (int i = 1; i <= numtasks; i++) {
+		if (hf_cpuid() == i) {
+			char[8] name = "slave-";
+			name[6] = (char)i; // should be a char, doesnt matter
+			name[7] = '\0';
+			hf_spawn(slave, 0, 0, 0, name, width * height);
+		}
 	}
-	// for i in 1..9
-	// spawn slave i in cpu i
 }
