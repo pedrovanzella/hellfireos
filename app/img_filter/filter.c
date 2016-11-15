@@ -201,10 +201,7 @@ void app_main(void) {
 	int i;
 	for (i = 1; i <= numtasks; i++) {
 		if (hf_cpuid() == i) {
-			char[8] name = "slave-";
-			name[6] = (char)i; // should be a char, doesnt matter
-			name[7] = '\0';
-			hf_spawn(slave, 0, 0, 0, name, width * height);
+			hf_spawn(slave, 0, 0, 0, "slave", width * height);
 		}
 	}
 }
