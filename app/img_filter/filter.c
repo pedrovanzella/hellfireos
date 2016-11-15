@@ -2,7 +2,7 @@
 #include <noc.h>
 #include "image.h"
 
-uint8_t numtasks = 1;
+uint8_t numtasks = 9;
 
 uint8_t gausian(uint8_t buffer[5][5]){
 	int32_t sum = 0, mpixel;
@@ -166,7 +166,7 @@ void master(void){
 		// Mudar isso para receber em um novo buffer
 		uint8_t* buff = (uint8_t*) malloc(width * height / numtasks);
 		hf_recvack(&cpu, &port, buff, size, 0);
-		printf("Master: received processes image\n");
+		printf("Master: received processed image\n");
 		// monta img com isso
 		// pra montar: multiplica pelo numero da task
 		memcpy(img + cpu * size, buff, size);
