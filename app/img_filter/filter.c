@@ -122,7 +122,7 @@ void slave(void) {
 		printf("Slave: received image to be processed\n");
 		if (!ret) {
 			// Se nao deu erro nenhum, podemos processar
-			do_gaussian(img, width / numtasks, height / numtasks);
+			do_gausian(img, width / numtasks, height / numtasks);
 			do_sobel(img, width / numtasks, height / numtasks);
 
 			// retorna pro builder
@@ -169,7 +169,7 @@ void master(void){
 		printf("Master: received processes image\n");
 		// monta img com isso
 		// pra montar: multiplica pelo numero da task
-		memcopy(img + cpu * size, buff, size);
+		memcpy(img + cpu * size, buff, size);
 
 		time = _readcounter() - time;
 
