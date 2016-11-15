@@ -155,7 +155,7 @@ void master(void){
 
 		// envia img cortada
 		for (i = 1; i <= numtasks; i++) {
-			hf_sendack(i, 2000, (image / numtasks) * i, (width * height) / numtasks, 0, 500);
+			hf_sendack(i, 2000, image + numtasks * i, (width * height) / numtasks, 0, 500);
 			printf("Master: sent image\n");
 		}
 
@@ -169,7 +169,7 @@ void master(void){
 		printf("Master: received processes image\n");
 		// monta img com isso
 		// pra montar: multiplica pelo numero da task
-		memcopy(img * cpu, buff, size);
+		memcopy(img + cpu * size, buff, size);
 
 		time = _readcounter() - time;
 
@@ -197,7 +197,9 @@ void master(void){
 void app_main(void) {
 	if (hf_cpuid() == 0){
 		hf_spawn(master, 0, 0, 0, "master", width * height);
-	for (int i = 1; i <= numtasks; i++) {
+	}
+	int i;
+	for (i = 1; i <= numtasks; i++) {
 		if (hf_cpuid() == i) {
 			char[8] name = "slave-";
 			name[6] = (char)i; // should be a char, doesnt matter
