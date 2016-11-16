@@ -150,9 +150,6 @@ void master(void){
 
 		time = _readcounter();
 
-		// for i in (1, numtasks)
-		// spawn slave com img cortada
-
 		// envia img cortada
 		for (i = 1; i <= numtasks; i++) {
 			hf_sendack(i, 2000, image + numtasks * i, (width * height) / numtasks, 0, 500);
@@ -160,16 +157,17 @@ void master(void){
 		}
 
 
-		// this won't work
 		// fica ouvindo por (numtasks) slaves
 		uint16_t cpu, port, size;
-		// Mudar isso para receber em um novo buffer
 		uint8_t* buff = (uint8_t*) malloc(width * height / numtasks);
-		hf_recvack(&cpu, &port, buff, size, 0);
-		printf("Master: received processed image\n");
-		// monta img com isso
-		// pra montar: multiplica pelo numero da task
-		memcpy(img + cpu * size, buff, size);
+		int i;
+		for (i = 0; i <= numtasks - 1; i++) {
+			hf_recvack(&cpu, &port, buff, size, 0);
+			printf("Master: received processed image chunk %d/%d\n", i + 1, numtasks);
+			// monta img com isso
+			// pra montar: multiplica pelo numero da task
+			memcpy(img + cpu * size, buff, size);
+		}
 
 		time = _readcounter() - time;
 
