@@ -151,9 +151,9 @@ void master(void){
 		time = _readcounter();
 
 		// envia img cortada
-		for (i = 1; i <= numtasks; i++) {
+		for (i = 1; i <= numtasks - 1; i++) {
 			hf_sendack(i, 2000, image + numtasks * i, (width * height) / numtasks, 0, 500);
-			printf("Master: sent image\n");
+			printf("Master: sent image chunk %d/%d\n", i, numtasks);
 		}
 
 
