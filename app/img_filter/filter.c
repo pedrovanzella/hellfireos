@@ -160,7 +160,6 @@ void master(void){
 		// fica ouvindo por (numtasks) slaves
 		uint16_t cpu, port, size;
 		uint8_t* buff = (uint8_t*) malloc(width * height / numtasks);
-		int i;
 		for (i = 0; i <= numtasks - 1; i++) {
 			hf_recvack(&cpu, &port, buff, size, 0);
 			printf("Master: received processed image chunk %d/%d\n", i + 1, numtasks);
